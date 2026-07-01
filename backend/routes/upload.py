@@ -15,12 +15,21 @@ async def upload_csv(file: UploadFile = File(...)):
     try:
         df = pd.read_csv(file.file)
 
+        duplicate_rows = int(df.duplicated().sum())
+
+        data_types = {
+            column: str(dtype)
+            for column, dtype in df.dtypes.items()
+        }
+
         return {
             "filename": file.filename,
             "rows": len(df),
             "columns": len(df.columns),
             "column_names": list(df.columns),
-            "missing_values": int(df.isnull().sum().sum())
+            "missing_values": int(df.isnull().sum().sum()),
+            "duplicate_rows": duplicate_rows,
+            "data_types": data_types
         }
 
     except Exception as e:
@@ -28,3 +37,4 @@ async def upload_csv(file: UploadFile = File(...)):
             status_code=500,
             detail=str(e)
         )
+    

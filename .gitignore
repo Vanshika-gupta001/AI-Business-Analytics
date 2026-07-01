@@ -1,0 +1,19 @@
+# Virtual Environment
+backend/venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# VS Code
+.vscode/
+
+# Uploaded files
+backend/uploads/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
