@@ -1,3 +1,9 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Activity } from "lucide-react";
+
+
 export default function HealthCard({
   score,
   status,
@@ -7,25 +13,55 @@ export default function HealthCard({
   status: string;
   grade: string;
 }) {
-  return (
-    <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 w-full">
-      <h2 className="text-lg text-zinc-400">
-        Data Health Score
-      </h2>
 
-      <div className="mt-3 text-5xl font-bold text-white">
-        {score}/100
+  return (
+
+    <motion.div
+      initial={{opacity:0, y:20}}
+      animate={{opacity:1, y:0}}
+      transition={{duration:0.5}}
+
+      className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 
+      hover:border-blue-500 transition"
+    >
+
+      <div className="flex items-center gap-3">
+
+        <Activity className="text-blue-400" size={28}/>
+
+        <h2 className="text-lg text-zinc-300">
+          Data Health Score
+        </h2>
+
       </div>
 
-      <div className="mt-4 flex gap-3">
-        <span className="bg-green-600 px-3 py-1 rounded-full text-sm">
+
+      <div className="mt-5 text-5xl font-bold">
+
+        {score}
+
+        <span className="text-zinc-500 text-2xl">
+          /100
+        </span>
+
+      </div>
+
+
+      <div className="flex gap-3 mt-5">
+
+        <span className="px-4 py-1 rounded-full bg-green-600 text-sm">
           {status}
         </span>
 
-        <span className="bg-blue-600 px-3 py-1 rounded-full text-sm">
+
+        <span className="px-4 py-1 rounded-full bg-blue-600 text-sm">
           Grade {grade}
         </span>
+
       </div>
-    </div>
+
+
+    </motion.div>
+
   );
 }

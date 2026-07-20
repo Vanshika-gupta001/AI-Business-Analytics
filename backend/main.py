@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles  
 from fastapi.middleware.cors import CORSMiddleware 
-
 from routes.upload import router as upload_router
+from routes.chat import router as chat_router
 
 app = FastAPI(
     title="AI Business Analytics API",
@@ -25,7 +25,7 @@ app.mount(
 )
 
 app.include_router(upload_router)
-
+app.include_router(chat_router)
 
 @app.get("/")
 def home():

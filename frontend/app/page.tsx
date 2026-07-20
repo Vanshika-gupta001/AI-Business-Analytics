@@ -9,6 +9,11 @@ import AISummaryCard from "@/components/AISummaryCard";
 import BusinessAIReportCard from "@/components/BusinessAIReportCard";
 import ChartGallery from "@/components/ChartGallery";
 import PDFDownloadButton from "@/components/PDFDownloadButton";
+import DashboardStats from "@/components/DashboardStats";
+import RecommendationCard from "@/components/RecommendationCard";
+import HealthGauge from "@/components/HealthGauge";
+import ChartCard from "@/components/ChartCard";
+import AIChat from "@/components/AIChat";
 
 
 export default function Home() {
@@ -34,7 +39,6 @@ export default function Home() {
         </p>
 
       </div>
-
 
 
       {/* Upload Section */}
@@ -63,8 +67,9 @@ export default function Home() {
               grade={data.grade}
 
             />
-
-
+            <HealthGauge
+              score={data.health_score}
+            />
 
             <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6">
 
@@ -82,9 +87,6 @@ export default function Home() {
           </div>
 
 
-
-
-
           {/* Dataset Information */}
 
           <DatasetCard
@@ -93,8 +95,10 @@ export default function Home() {
 
           />
 
-
-
+          <DashboardStats data={data}/>
+          <RecommendationCard
+           recommendations={data.recommendations}
+          />
 
 
           {/* AI Summary */}
@@ -104,10 +108,6 @@ export default function Home() {
             summary={data.ai_summary}
 
           />
-
-
-
-
 
           {/* Business Report */}
 
@@ -121,9 +121,7 @@ export default function Home() {
             />
 
           }
-
-
-
+          <AIChat dataset = {data}/>
 
 
           {/* Charts */}
@@ -131,16 +129,11 @@ export default function Home() {
           {
             data.charts &&
 
-            <ChartGallery
-
+            <ChartCard
               charts={data.charts}
-
             />
 
           }
-
-
-
 
 
           {/* PDF */}

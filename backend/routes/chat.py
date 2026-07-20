@@ -1,18 +1,18 @@
-from fastapi import APIRouter, UploadFile, File
-import pandas as pd
-from services.ai_chat import answer_question
+from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
 
 router = APIRouter()
 
-df_cache = {}  # temporary (we'll upgrade later)
 
-@router.post("/ask")
-async def ask_question(file: UploadFile = File(...), question: str = ""):
-    df = pd.read_csv(file.file)
+class ChatRequest(BaseModel):
+    message: str
+    dataset: Optional[Dict[str, Any]] = None
 
-    answer = answer_question(df, question)
+
+@router.post("/chat")
+def chat(request: ChatRequest):
 
     return {
-        "question": question,
-        "answer": answer
+        "reply": f"You asked: {request.message}"
     }
