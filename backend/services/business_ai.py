@@ -13,6 +13,7 @@ def generate_business_report(result):
 
     for item in insights:
 
+
         if "missing values" in item:
             try:
                 missing_values += int(item.split()[2])
@@ -87,6 +88,5 @@ suitable for analytics and decision-making.
         + risks
         + steps
     )
-
 
     return report
