@@ -71,6 +71,7 @@ docker compose up --build
   (`GET /datasets` for history, `GET /datasets/{id}` to reload without
   recomputing)
 - Chat history persisted per dataset (`GET /chat/{dataset_id}`)
+- add the history button
 - Every model-training run logged (`training_runs` table)
 - Alembic migrations (`alembic/versions/`) instead of relying on
   `create_all` in production
