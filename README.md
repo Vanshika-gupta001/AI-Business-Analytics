@@ -74,6 +74,7 @@ docker compose up --build
 - Every model-training run logged (`training_runs` table)
 - Alembic migrations (`alembic/versions/`) instead of relying on
   `create_all` in production
+- History button created
 
 ## Still worth adding before a real production launch
 
