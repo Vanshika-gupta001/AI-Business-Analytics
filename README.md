@@ -13,7 +13,6 @@ questions about your data — all behind real user accounts.
 - **DB**: PostgreSQL via SQLAlchemy + Alembic migrations (SQLite fallback for quick local testing)
 - **Frontend**: Next.js 16 (App Router), React 19, Tailwind
 
-## First-time setup
 
 ### 1. Rotate your Groq key
 
