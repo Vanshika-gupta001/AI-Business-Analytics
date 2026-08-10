@@ -9,7 +9,7 @@ questions about your data — all behind real user accounts.
 ## Stack
 
 - **Backend**: FastAPI, pandas, scikit-learn, matplotlib/seaborn, reportlab, Groq
-- **Auth**: JWT (python-jose) + bcrypt (passlib)
+
 - **DB**: PostgreSQL via SQLAlchemy + Alembic migrations (SQLite fallback for quick local testing)
 - **Frontend**: Next.js 16 (App Router), React 19, Tailwind
 
