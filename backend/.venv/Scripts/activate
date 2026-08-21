@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\HP\Desktop\vanshika\AI-Business-Analytics\backend\.venv"
+VIRTUAL_ENV="C:\Users\HP\OneDrive\Desktop\vanshika\AI-Business-Analytics\backend\.venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

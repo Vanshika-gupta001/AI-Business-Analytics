@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -8,18 +10,22 @@ from reportlab.platypus import (
 
 from reportlab.lib.styles import getSampleStyleSheet
 
+# Anchored to this file's own directory (backend/services -> backend/reports)
+# so the reports folder is always the same physical location regardless of
+# which directory the server process happens to be launched from.
+_REPORTS_DIR = Path(__file__).resolve().parent.parent / "reports"
 
-def generate_pdf_report(data):
 
-    os.makedirs("reports", exist_ok=True)
+def generate_pdf_report(data, dataset_id: str):
 
-    filename = data.get("filename", "report.csv")
-    pdf_name = filename.replace(".csv", "_business_report.pdf")
+    os.makedirs(_REPORTS_DIR, exist_ok=True)
 
-    pdf_path = os.path.join(
-        "reports",
-        pdf_name
-    )
+    # Unique per dataset (not just original filename) — two uploads that
+    # happen to share a filename would otherwise overwrite each other's
+    # PDF, breaking "download PDF" for the older entry in History.
+    pdf_name = f"{dataset_id}_report.pdf"
+
+    pdf_path = str(_REPORTS_DIR / pdf_name)
 
     doc = SimpleDocTemplate(pdf_path)
 

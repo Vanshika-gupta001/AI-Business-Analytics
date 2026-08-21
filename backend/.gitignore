@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Env / secrets
+.env
+!.env.example
+
+# Uploaded data & generated output (never commit user data)
+uploads/*
+!uploads/.gitkeep
+!uploads/charts/.gitkeep
+!uploads/datasets/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# DB
+*.sqlite3
+*.db
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

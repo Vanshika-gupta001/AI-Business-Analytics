@@ -2,83 +2,546 @@
 
 import { useState } from "react";
 
-export default function UploadCSV({setData}: {setData:any}) {
+import {
+  UploadCloud,
+  FileSpreadsheet,
+  Loader2,
+  CheckCircle,
+  AlertCircle
+} from "lucide-react";
 
-  const [loading,setLoading] = useState(false);
-
-
-  const uploadFile = async(e:any)=>{
-
-    const file = e.target.files[0];
-
-    if(!file) return;
-
-
-    const formData = new FormData();
-
-    formData.append("file",file);
+import { apiFetch } from "../lib/api";
 
 
-    setLoading(true);
+export default function UploadCSV({
+
+setData
+
+}:{
+
+setData:any;
+
+}){
 
 
-    try{
+const [file,setFile] = useState<File | null>(null);
 
-      const response = await fetch(
-        "http://127.0.0.1:8000/upload",
-        {
-          method:"POST",
-          body:formData
-        }
-      );
+const [loading,setLoading] = useState(false);
+
+const [error,setError] = useState("");
+
+const [success,setSuccess] = useState("");
 
 
-      const result = await response.json();
 
-      console.log(result);
-
-      setData(result);
+async function uploadFile(){
 
 
-    }catch(error){
+if(!file){
 
-      console.log(error);
+setError("Please select a CSV file first.");
 
-    }
+return;
+
+}
 
 
-    setLoading(false);
 
-  }
+setLoading(true);
+
+setError("");
+
+setSuccess("");
+
+
+
+const formData = new FormData();
+
+
+formData.append(
+"file",
+file
+);
+
+
+
+try{
+
+
+const response = await apiFetch(
+
+"/upload",
+
+{
+
+method:"POST",
+
+body:formData
+
+}
+
+);
+
+
+
+
+const result = await response.json();
+
+
+
+
+if(!response.ok){
+
+throw new Error(
+result.detail || "Upload failed"
+);
+
+}
+
+
+
+
+console.log(
+"UPLOAD RESPONSE:",
+result
+);
+
+
+
+
+setData(result);
+
+
+setSuccess(
+"Dataset analyzed successfully!"
+);
+
+
+
+}
+
+catch(error:any){
+
+
+console.error(
+"UPLOAD ERROR:",
+error
+);
+
+
+setError(
+error.message || "Something went wrong."
+);
+
+
+}
+
+
+finally{
+
+
+setLoading(false);
+
+
+}
+
+
+}
+
+
 
 
 
 return (
 
-<div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6">
 
-<h2 className="text-xl text-white mb-4">
+<div
+
+className="
+bg-[var(--color-accent)]/5
+backdrop-blur-xl
+
+border
+border-white/10
+
+rounded-xl
+
+p-8
+
+
+
+mt-6
+"
+
+>
+
+
+<div
+
+className="
+flex
+items-center
+gap-3
+mb-6
+"
+
+>
+
+
+<div
+
+className="
+p-3
+rounded-xl
+bg-[var(--color-accent-dim)]
+"
+
+>
+
+<UploadCloud
+
+className="text-[var(--color-accent)]"
+
+size={30}
+
+/>
+
+</div>
+
+
+
+<div>
+
+
+<h2 className="text-2xl font-semibold">
+
 Upload Dataset
+
 </h2>
 
 
-<input
-type="file"
-accept=".csv"
-onChange={uploadFile}
-className="text-white"
-/>
+<p className="text-[var(--color-text-secondary)] text-sm">
 
+Upload CSV and generate AI insights
 
-{
-loading && 
-<p className="text-zinc-400 mt-3">
-Analyzing Dataset...
 </p>
-}
 
 
 </div>
+
+
+</div>
+
+
+
+
+
+<label
+
+
+className="
+
+cursor-pointer
+
+border-2
+
+border-dashed
+
+border-[var(--color-border)]
+
+rounded-xl
+
+p-10
+
+flex
+
+flex-col
+
+items-center
+
+justify-center
+
+hover:border-[var(--color-accent)]
+
+transition
+
+bg-[var(--color-ink)]/30
+
+"
+
+>
+
+
+
+<UploadCloud
+
+size={45}
+
+className="text-[var(--color-text-secondary)] mb-4"
+
+/>
+
+
+
+<p className="text-[var(--color-text-secondary)] font-medium">
+
+Drag & Drop CSV File
+
+</p>
+
+
+
+<p className="text-[var(--color-text-muted)] text-sm mt-2">
+
+or click to browse
+
+</p>
+
+
+
+<input
+
+
+type="file"
+
+accept=".csv"
+
+
+hidden
+
+
+onChange={(e)=>{
+
+
+const selected =
+e.target.files?.[0];
+
+
+if(selected){
+
+
+setFile(selected);
+
+
+}
+
+
+}}
+
+
+/>
+
+
+</label>
+
+
+
+
+
+{
+file &&
+
+
+<div
+
+className="
+mt-5
+
+bg-[var(--color-ink)]
+
+border
+border-[var(--color-border)]
+
+rounded-xl
+
+p-4
+
+flex
+items-center
+gap-3
+
+"
+
+>
+
+
+<FileSpreadsheet
+
+className="text-[var(--color-success)]"
+
+/>
+
+
+
+<div>
+
+<p className="font-medium">
+
+{file.name}
+
+</p>
+
+
+<p className="text-xs text-[var(--color-text-muted)]">
+
+Ready for analysis
+
+</p>
+
+
+</div>
+
+
+
+</div>
+
+}
+
+
+
+
+
+{
+success &&
+
+
+<div
+
+className="
+mt-4
+flex
+items-center
+gap-2
+text-[var(--color-success)]
+text-sm
+"
+
+>
+
+<CheckCircle size={18}/>
+
+{success}
+
+</div>
+
+
+}
+
+
+
+
+
+{
+error &&
+
+
+<div
+
+className="
+mt-4
+flex
+items-center
+gap-2
+text-[var(--color-danger)]
+text-sm
+"
+
+>
+
+<AlertCircle size={18}/>
+
+{error}
+
+</div>
+
+
+}
+
+
+
+
+
+
+
+<button
+
+
+onClick={uploadFile}
+
+
+disabled={!file || loading}
+
+
+
+className="
+
+mt-6
+
+w-full
+
+bg-[var(--color-accent)]
+
+text-[var(--color-ink)]
+
+rounded-xl
+
+py-3
+
+font-semibold
+
+hover:opacity-90
+
+transition
+
+disabled:opacity-40
+
+flex
+
+items-center
+
+justify-center
+
+gap-2
+
+"
+
+
+>
+
+
+
+{
+
+loading ?
+
+<>
+
+<Loader2
+
+className="animate-spin"
+
+/>
+
+Analyzing Dataset...
+
+</>
+
+
+:
+
+"Analyze Dataset"
+
+
+}
+
+
+
+</button>
+
+
+
+</div>
+
 
 )
 

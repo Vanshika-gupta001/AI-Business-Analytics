@@ -1,8 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --color-ink: #0b0f14;
+  --color-surface: #131920;
+  --color-surface-raised: #171e26;
+  --color-border: #232b35;
+
+  /* Text */
+  --color-text-primary: #e8eaed;
+  --color-text-secondary: #8b96a3;
+  --color-text-muted: #5c6773;
+
+  /* Signature accent — used sparingly for insight/emphasis */
+  --color-accent: #d4a24c;
+  --color-accent-dim: #d4a24c1a;
+
+  /* Secondary data accent */
+  --color-teal: #4fb3a9;
+
+  /* Status */
+  --color-danger: #e06b5d;
+  --color-success: #6ab97d;
+
+  --background: var(--color-ink);
+  --foreground: var(--color-text-primary);
 }
 
 @theme inline {
@@ -12,15 +34,24 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--color-ink);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Signature type treatment for data/metrics — sets this apart from a
+   generic dashboard where every number uses the same body font. */
+.data-num {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Fixes CSS Grid's default behavior where grid items can't shrink below
+   their content's natural width (e.g. long numbers, wide tables) —
+   without this, a single wide element anywhere in a grid can push the
+   whole page into horizontal scroll. */
+.grid > * {
+  min-width: 0;
 }
