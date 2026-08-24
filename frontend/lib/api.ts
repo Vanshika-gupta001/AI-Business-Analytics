@@ -3,7 +3,9 @@
  * login/register) as a Bearer token, and centralizes the API base URL.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://ai-business-analytics-7xoe.onrender.com";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
