@@ -112,7 +112,7 @@ def generate_charts(df):
         box = plt.boxplot(
             df[col].dropna(),
             patch_artist=True,
-            labels=[col]
+            tick_labels=[col]
         )
 
         for patch in box["boxes"]:
