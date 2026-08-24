@@ -19,3 +19,8 @@ backend/uploads/
 Thumbs.db
 node_modules/
 frontend.zip
+
+# Python virtual environments
+.venv/
+backend/.venv/
+
