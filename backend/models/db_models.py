@@ -46,6 +46,7 @@ class Dataset(Base):
 
     filename = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
+    csv_content = Column(Text, nullable=True)
 
     rows = Column(Integer, nullable=True)
     columns = Column(Integer, nullable=True)

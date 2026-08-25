@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import pandas as pd
+from services.dataset_loader import load_dataframe
 
 from database import get_db
 from models.db_models import User, Dataset
@@ -46,7 +47,7 @@ def query_dataset(
 
     try:
 
-        df = pd.read_csv(dataset_row.file_path)
+        df = load_dataframe(dataset_row)
 
         result = run_data_query(request.question, df)
 

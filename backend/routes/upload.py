@@ -1,9 +1,13 @@
+import io
 import os
 import traceback
 import uuid
 
+from scipy import io
+
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse 
+import io
 from sqlalchemy.orm import Session
 import pandas as pd
 
@@ -19,6 +23,8 @@ from services.ai_summary import generate_ai_summary
 from services.ai_recommendations import generate_ai_recommendations
 
 from services.business_recommendations import generate_business_recommendations
+from services.dataset_loader import load_dataframe
+
 
 from services.business_ai import generate_business_report
 from services.grade import get_grade
@@ -59,6 +65,8 @@ async def upload_csv(
         dataset_path = os.path.join(DATASET_FOLDER, f"{dataset_id}.csv")
 
         df.to_csv(dataset_path, index=False)
+
+        csv_text = df.to_csv(index=False)
 
         # -------------------------------
         # Dataset Information
@@ -219,6 +227,7 @@ async def upload_csv(
             owner_id=current_user.id,
             filename=file.filename,
             file_path=dataset_path,
+            csv_content=csv_text,
             rows=dataset_info["rows"],
             columns=dataset_info["columns"],
             health_score=result.get("health_score"),
@@ -285,7 +294,19 @@ def get_dataset(
     if not row:
         raise HTTPException(status_code=404, detail="Dataset not found.")
 
-    return row.analysis_result
+    result = row.analysis_result or {}
+
+    charts = result.get("charts", [])
+    charts_missing = not charts or not all(os.path.exists(c) for c in charts)
+
+    if charts_missing:
+        try:
+            df = load_dataframe(row)
+            result["charts"] = generate_charts(df)
+        except Exception:
+            pass
+
+    return result
 
 @router.get("/datasets/{dataset_id}/download/csv")
 def download_dataset_csv(
@@ -300,8 +321,26 @@ def download_dataset_csv(
         .first()
     )
 
-    if not row or not row.file_path or not os.path.exists(row.file_path):
-        raise HTTPException(status_code=404, detail="CSV file not found.")
+    if not row:
+        raise HTTPException(status_code=404, detail="Dataset not found.")
+
+    if row.file_path and os.path.exists(row.file_path):
+        return FileResponse(
+            path=row.file_path,
+            media_type="text/csv",
+            filename=row.filename or "dataset.csv"
+        )
+
+    if row.csv_content:
+        return StreamingResponse(
+            io.StringIO(row.csv_content),
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f'attachment; filename="{row.filename or "dataset.csv"}"'
+            }
+        )
+
+    raise HTTPException(status_code=404, detail="CSV file not found.")
 
     return FileResponse(
         path=row.file_path,
@@ -323,8 +362,26 @@ def download_dataset_pdf(
         .first()
     )
 
-    if not row or not row.report_path or not os.path.exists(row.report_path):
-        raise HTTPException(status_code=404, detail="PDF report not found.")
+    if not row:
+        raise HTTPException(status_code=404, detail="Dataset not found.")
+
+    if row.report_path and os.path.exists(row.report_path):
+        return FileResponse(
+            path=row.report_path,
+            media_type="application/pdf",
+            filename=f"{(row.filename or 'dataset').rsplit('.', 1)[0]}_report.pdf"
+        )
+
+    if row.analysis_result:
+        new_pdf_path = generate_pdf_report(row.analysis_result, dataset_id)
+
+        return FileResponse(
+            path=new_pdf_path,
+            media_type="application/pdf",
+            filename=f"{(row.filename or 'dataset').rsplit('.', 1)[0]}_report.pdf"
+        )
+
+    raise HTTPException(status_code=404, detail="PDF report not found.")
 
     return FileResponse(
         path=row.report_path,
