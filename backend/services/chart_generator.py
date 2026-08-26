@@ -1,6 +1,7 @@
 import os
+import gc
 import matplotlib
-matplotlib.use("Agg")  # non-interactive backend — required for server-side chart generation
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -172,5 +173,9 @@ def generate_charts(df):
             plt.close()
 
             charts.append(filepath)
+    # Explicitly release matplotlib/pandas memory — matters a lot on
+    # memory-constrained hosting (e.g. Render's free 512MB instances).
+    plt.close("all")
+    gc.collect()
 
     return charts

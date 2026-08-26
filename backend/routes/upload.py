@@ -238,6 +238,10 @@ async def upload_csv(
         db.add(dataset_row)
         db.commit()
 
+        import gc
+        del df
+        gc.collect()
+
         return result
 
     except Exception as e:

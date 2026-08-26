@@ -61,6 +61,15 @@ def train_baseline_model(df: pd.DataFrame, target_column: str):
 
     working_df = df.dropna(subset=[target_column]).copy()
 
+    # Cap training data size — a 200k-row RandomForest is memory-heavy
+    # and unnecessary for a baseline model; 20k rows is plenty to get a
+    # meaningful directional result while staying within tight memory
+    # limits (e.g. Render's free-tier 512MB).
+    MAX_TRAINING_ROWS = 20000
+
+    if len(working_df) > MAX_TRAINING_ROWS:
+        working_df = working_df.sample(n=MAX_TRAINING_ROWS, random_state=42)
+
     if len(working_df) < 20:
         raise ValueError(
             "Not enough rows with a valid target value to train a model "
@@ -114,7 +123,7 @@ def train_baseline_model(df: pd.DataFrame, target_column: str):
     if problem_type == "classification":
 
         model = RandomForestClassifier(
-            n_estimators=200,
+            n_estimators=100,
             max_depth=None,
             random_state=42,
             n_jobs=-1
@@ -140,7 +149,7 @@ def train_baseline_model(df: pd.DataFrame, target_column: str):
     else:
 
         model = RandomForestRegressor(
-            n_estimators=200,
+            n_estimators=100,
             max_depth=None,
             random_state=42,
             n_jobs=-1
