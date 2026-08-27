@@ -123,7 +123,7 @@ def train_baseline_model(df: pd.DataFrame, target_column: str):
     if problem_type == "classification":
 
         model = RandomForestClassifier(
-            n_estimators=100,
+            n_estimators=60,
             max_depth=None,
             random_state=42,
             n_jobs=-1

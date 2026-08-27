@@ -203,10 +203,7 @@ def generate_pdf_report(data, dataset_id: str):
         []
     ):
 
-        chart_path = chart.replace(
-            "/",
-            "\\"
-        )
+        chart_path = os.path.normpath(chart)
 
         if os.path.exists(chart_path):
 
