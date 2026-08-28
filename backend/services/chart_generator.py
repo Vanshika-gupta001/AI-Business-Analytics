@@ -51,6 +51,14 @@ def generate_charts(df):
 
     rows = len(df)
 
+    # Sample large datasets before plotting — a histogram/boxplot from
+    # 250,000 points looks statistically identical to one from a 5,000-point
+    # sample, but uses a fraction of the memory. Crucial on memory-limited
+    # hosting (Render's free 512MB instances).
+    MAX_CHART_ROWS = 5000
+
+    plot_df = df.sample(n=MAX_CHART_ROWS, random_state=42) if rows > MAX_CHART_ROWS else df
+
     # -------------------------
     # 1. Histogram (numeric)
     # -------------------------
@@ -60,7 +68,7 @@ def generate_charts(df):
 
         plt.figure(figsize=(6, 4))
 
-        plt.hist(df[col].dropna(), color=COLOR_ACCENT, edgecolor=COLOR_INK)
+        plt.hist(plot_df[col].dropna(), color=COLOR_ACCENT, edgecolor=COLOR_INK)
 
         filename = f"{col}_histogram.png"
         filepath = os.path.join(UPLOAD_FOLDER, filename).replace("\\", "/")
@@ -76,7 +84,7 @@ def generate_charts(df):
     # -------------------------
     # 2. Correlation Matrix
     # -------------------------
-    numeric_df = df.select_dtypes(include=["number"])
+    numeric_df = plot_df.select_dtypes(include=["number"])
 
     if len(numeric_df.columns) > 1:
 
@@ -110,8 +118,7 @@ def generate_charts(df):
 
         plt.figure(figsize=(6, 4))
 
-        box = plt.boxplot(
-            df[col].dropna(),
+        box = plt.boxplot(plot_df[col].dropna(),
             patch_artist=True,
             tick_labels=[col]
         )
@@ -142,7 +149,7 @@ def generate_charts(df):
 
     for col in text_columns:
 
-        unique_count = df[col].nunique()
+        unique_count = plot_df[col].nunique()
 
         # Skip ID-like / free-text columns — a pie chart of 60 unique
         # names is noise, not an insight.
@@ -159,8 +166,7 @@ def generate_charts(df):
 
             plt.figure(figsize=(6, 6))
 
-            df[col].value_counts().plot(
-                kind="pie",
+            plot_df[col].value_counts().plot(kind="pie",
                 autopct="%1.1f%%",
                 colors=PALETTE,
                 textprops={"color": COLOR_TEXT}
