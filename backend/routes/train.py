@@ -1,4 +1,4 @@
-from services.dataset_loader import load_dataframe
+from services.dataset_loader import load_dataframe_sampled
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -44,7 +44,7 @@ def train_model(
 
     try:
 
-        df = load_dataframe(dataset_row)
+        df = load_dataframe_sampled(dataset_row)
 
         result = train_baseline_model(df, request.target_column)
 
