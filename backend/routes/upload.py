@@ -23,7 +23,7 @@ from services.ai_summary import generate_ai_summary
 from services.ai_recommendations import generate_ai_recommendations
 
 from services.business_recommendations import generate_business_recommendations
-from services.dataset_loader import load_dataframe
+from services.dataset_loader import load_dataframe, load_dataframe_sampled
 
 
 from services.business_ai import generate_business_report
@@ -305,7 +305,7 @@ def get_dataset(
 
     if charts_missing:
         try:
-            df = load_dataframe(row)
+            df = load_dataframe_sampled(row)
             result["charts"] = generate_charts(df)
         except Exception:
             pass
