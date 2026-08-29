@@ -1,84 +1,121 @@
 # AI Business Analytics
 
-Upload a CSV, get automated data profiling, anomaly detection, a health
-score, auto-generated charts, an AI-written business summary (Groq
-`llama-3.3-70b-versatile`), a trained baseline ML model (scikit-learn
-Random Forest), a downloadable PDF report, and a chat interface to ask
-questions about your data — all behind real user accounts.
+**AI-powered data analytics dashboard** — upload any CSV and get instant data profiling, AI-generated insights, anomaly detection, a trained predictive model, and a natural-language chat assistant that computes real answers from your data (not canned responses).
 
-## Stack
+🔗 **Live demo:** [ai-business-analytics-omega.vercel.app](https://ai-business-analytics-omega.vercel.app)
 
-- **Backend**: FastAPI, pandas, scikit-learn, matplotlib/seaborn, reportlab, Groq
-- **Auth**: JWT (python-jose) + bcrypt (passlib)
-- **DB**: PostgreSQL via SQLAlchemy + Alembic migrations (SQLite fallback for quick local testing)
-- **Frontend**: Next.js 16 (App Router), React 19, Tailwind
+> Hosted on free-tier infrastructure (Render + Vercel) — the backend may take 30–50s to wake up on the first request after inactivity.
 
-## First-time setup
+---
 
-### 1. Rotate your Groq key
+## Screenshots
 
-If you inherited this repo from an earlier zip, the old `.env.example`
-had a real key committed to it. Revoke it and generate a fresh one at
-https://console.groq.com/keys before doing anything else.
+**Dashboard — health score, quality checks, and AI-generated recommendations on every upload**
+![Dashboard](docs/screenshots/01-dashboard.png)
 
-### 2. Backend
+**Dataset preview — searchable, sortable table of the raw data**
+![Dataset preview](docs/screenshots/02-dataset-preview.png)
 
+**Generated business report — auto-built PDF with correlation matrix and per-column charts**
+![PDF report charts](docs/screenshots/03-pdf-report-charts.png)
+
+**Dataset history — reopen or re-download any past analysis without recomputing it**
+![Dataset history](docs/screenshots/04-dataset-history.png)
+
+**Ava — the AI assistant, answering with real computed numbers from the dataset**
+![Ava chat](docs/screenshots/05-ava-chat.png)
+
+---
+
+## Why this project is different
+
+Most "AI dashboard" portfolio projects wrap a single LLM call around a chart library. This one doesn't:
+
+- **The AI can't hallucinate numbers.** Ava's query engine never lets an LLM write or execute code. Instead, the model picks from a fixed set of safe operations (`groupby_agg`, `correlation`, `filter_count`, etc.) as structured JSON, which the backend then runs with real pandas — the AI decides *what* to compute, the backend decides *how*. Every number Ava gives you is a real, verifiable computation against your uploaded data.
+- **Guardrails on the ML, not just the UI.** ID-like or free-text columns are automatically excluded from the predictive-modeling target list. Small-sample results are flagged as "directional, not production-grade" instead of being presented with false confidence.
+- **Handles real-world scale.** Tested end-to-end (upload → profiling → charts → training → PDF export) against a 250,000-row dataset without crashing, on a memory-constrained free-tier server — via row sampling for chart generation and model training, and explicit memory cleanup after each request.
+- **Survives ephemeral hosting.** Free-tier hosts wipe local disk on every restart. Uploaded CSVs are also persisted in PostgreSQL, so a restart never breaks a saved analysis — charts and PDFs regenerate on demand if the disk copy is gone.
+
+---
+
+## Features
+
+| Area | What it does |
+|---|---|
+| **Auth** | JWT-based register/login, protected routes |
+| **Upload & Profiling** | Drag-and-drop CSV upload, automatic column typing, missing-value and duplicate detection |
+| **Data Health Score** | Weighted completeness + uniqueness score, with a breakdown of what's driving it |
+| **Anomaly Detection** | Z-score based outlier detection per numeric column, surfaced as its own section |
+| **AI Insights** | Dataset-specific observations, correctly distinguishing "Good" findings from real "Warnings" |
+| **AI Recommendations** | Data-cleaning suggestions generated from the dataset's actual stats (Groq / `openai/gpt-oss-120b`) |
+| **Business Recommendations** | Problem → Evidence → Cause → Recommendation → Impact cards, grounded in the dataset |
+| **Predictive Modeling** | One-click Random Forest classifier/regressor with real metrics (R², accuracy, F1, etc.) and feature importance |
+| **Ava — AI Assistant** | Single chat surface: computes real answers for data questions, falls back to general conversation for anything else |
+| **Charts** | Auto-generated histograms, box plots, correlation heatmap, and category breakdowns, dark-themed to match the app |
+| **PDF Reports** | One-click business report export, including all charts |
+| **Dataset History** | Searchable, sortable, filterable table of past uploads; reopen any analysis without recomputing; CSV/PDF re-download |
+| **Onboarding** | First-time guided tips on login, register, and first dashboard visit |
+
+---
+
+## Tech Stack
+
+**Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Framer Motion
+**Backend:** FastAPI, SQLAlchemy, PostgreSQL, scikit-learn, pandas, matplotlib/seaborn, ReportLab
+**AI:** Groq API (`openai/gpt-oss-120b`) for chat, summaries, and recommendations
+**Auth:** JWT (python-jose), bcrypt password hashing
+**Deployment:** Vercel (frontend) + Render (backend + PostgreSQL), Dockerized backend
+
+---
+
+## Architecture highlights
+
+- **Safe natural-language querying** (`services/query_engine.py`): the LLM never generates or executes arbitrary code. It's constrained to selecting one of ~8 pre-defined pandas operations as JSON, validated against the actual dataset's columns before running.
+- **Memory-safe on large datasets**: chart generation and model training sample down to a fixed row cap before processing, and dataframes are explicitly released after each request — necessary to stay within a 512MB memory limit on the free-tier host.
+- **Ephemeral-storage resilience**: uploaded CSVs are persisted in PostgreSQL (not just disk), so charts and PDFs can always be regenerated even after a server restart wipes local files.
+
+---
+
+## Running locally
+
+### Backend
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS/Linux
 pip install -r requirements.txt
-
-cp .env.example .env
-# Edit .env: set GROQ_API_KEY, DATABASE_URL, JWT_SECRET_KEY
-# Generate a JWT secret with: python -c "import secrets; print(secrets.token_hex(32))"
-
-# Option A — quick local start (SQLite, no Postgres needed):
-#   leave DATABASE_URL unset / remove it from .env, tables are created
-#   automatically on startup.
-#
-# Option B — Postgres (recommended, matches production):
-alembic upgrade head
-
-uvicorn main:app --reload
 ```
 
-API docs at http://127.0.0.1:8000/docs.
+Copy `.env.example` to `.env` and fill in:
+```
+GROQ_API_KEY=your_groq_api_key_here      # free at console.groq.com/keys
+DATABASE_URL=postgresql://...            # or leave unset to use local SQLite
+JWT_SECRET=your_jwt_secret_here          # generate with: python -c "import secrets; print(secrets.token_hex(32))"
+```
 
-### 3. Frontend
+```bash
+python -m uvicorn main:app --reload
+```
 
+### Frontend
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local   # NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 npm run dev
 ```
 
-App at http://localhost:3000. You'll be redirected to `/login` — register
-an account, then upload a CSV.
+Set `NEXT_PUBLIC_API_URL` in `frontend/.env.local` to your backend URL (`http://127.0.0.1:8000` for local dev).
 
-### 4. Or run everything with Docker
+---
 
-```bash
-cp backend/.env.example backend/.env   # fill in real values first
-docker compose up --build
-```
+## Sample dataset
 
-## What's implemented
+A sample CSV is included in `/datasets` for quickly trying out every feature without needing your own data.
 
-- Email/password auth (JWT, bcrypt) — `/auth/register`, `/auth/login`, `/auth/me`
-- Every upload is tied to the logged-in user and saved to Postgres
-  (`GET /datasets` for history, `GET /datasets/{id}` to reload without
-  recomputing)
-- Chat history persisted per dataset (`GET /chat/{dataset_id}`)
-- Every model-training run logged (`training_runs` table)
-- Alembic migrations (`alembic/versions/`) instead of relying on
-  `create_all` in production
+---
 
-## Still worth adding before a real production launch
+## Author
 
-- Rate limiting on `/upload` and `/chat` (a single abusive user can hammer the Groq API / burn compute)
-- Background job queue (Celery/RQ) for large CSVs — the whole pipeline (profiling + charts + PDF + AI summary) currently runs synchronously in the request
-- File size limits + stricter CSV validation on `/upload`
-- Password reset / email verification flow
-- Object storage (S3-compatible) instead of local disk for `uploads/` and `reports/` once you deploy somewhere without persistent disk (e.g. most PaaS)
+**Vanshika Gupta**
+[GitHub](https://github.com/Vanshika-gupta001) · [LinkedIn](#) (https://www.linkedin.com/in/vanshika-gupta-mba)
