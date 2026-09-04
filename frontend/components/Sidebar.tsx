@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+
 import {
   LayoutDashboard,
   Database,
@@ -14,14 +15,15 @@ import {
   Lightbulb,
   Brain,
   LogOut,
-  History
+  History,
+  Sliders
 } from "lucide-react";
 
 import { useAuth } from "../lib/auth-context";
 
 
 // Sections that live on the dashboard ("/") as scroll anchors.
-const DASHBOARD_SECTIONS = ["dashboard", "dataset", "insights", "predictive", "reports"];
+const DASHBOARD_SECTIONS = ["dashboard", "dataset", "insights", "predictive", "scenario", "reports"];
 
 
 export default function Sidebar({
@@ -58,6 +60,7 @@ export default function Sidebar({
       items: [
         { name: "Insights", icon: Lightbulb, id: "insights" },
         { name: "Predictive Modeling", icon: Brain, id: "predictive" },
+        { name: "Scenario Simulator", icon: Sliders, id: "scenario" },   
         { name: "Reports", icon: FileText, id: "reports" }
       ]
     },

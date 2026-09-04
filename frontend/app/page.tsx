@@ -33,6 +33,7 @@ import { apiFetch } from "../lib/api";
 import AnomalyDetectionCard from "@/components/AnomalyDetectionCard";
 import BusinessRecommendationsCard from "@/components/BusinessRecommendationsCard";
 
+import ScenarioSimulatorCard from "@/components/ScenarioSimulatorCard";
 
 function DashboardContent(){
 
@@ -331,7 +332,9 @@ data={data}
 </div>
 
 
-
+<div id="scenario">
+  <ScenarioSimulatorCard data={data} />
+</div>
 
 
 {/* Recommendations */}

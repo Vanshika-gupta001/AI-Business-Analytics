@@ -16,6 +16,75 @@ from reportlab.lib.styles import getSampleStyleSheet
 _REPORTS_DIR = Path(__file__).resolve().parent.parent / "reports"
 
 
+def _add_scenario_section(content, styles, scenario: dict):
+    """
+    Adds a "Recommended Scenario" section to the PDF when a Scenario
+    Simulator run has been saved for this dataset. Skipped entirely if
+    no scenario has been run yet, so datasets without one keep the
+    original report layout unchanged.
+    """
+
+    content.append(
+        Paragraph(
+            "7. Recommended Scenario (Strategic Decision Simulation)",
+            styles["Heading2"]
+        )
+    )
+
+    direction_label = "Maximize" if scenario.get("direction") == "maximize" else "Minimize"
+
+    intro = f"""
+    Goal: {direction_label} {scenario.get('target_column')}<br/>
+    Optimization method: Bayesian Optimization ({scenario.get('iterations_run')} evaluations)
+    """
+
+    content.append(Paragraph(intro, styles["BodyText"]))
+    content.append(Spacer(1, 10))
+
+    best_values = scenario.get("best_values", {})
+
+    values_text = "<br/>".join(
+        f"{key}: {value}" for key, value in best_values.items()
+    )
+
+    content.append(
+        Paragraph(f"<b>Recommended values:</b><br/>{values_text}", styles["BodyText"])
+    )
+
+    content.append(Spacer(1, 8))
+
+    content.append(
+        Paragraph(
+            f"<b>Predicted {scenario.get('target_column')}: "
+            f"{scenario.get('predicted_target')}</b>",
+            styles["BodyText"]
+        )
+    )
+
+    content.append(Spacer(1, 10))
+
+    sensitivity = scenario.get("sensitivity", [])
+
+    if sensitivity:
+
+        content.append(
+            Paragraph("<b>Sensitivity — which lever matters most:</b>", styles["BodyText"])
+        )
+
+        for item in sensitivity:
+
+            content.append(
+                Paragraph(
+                    f"• {item['variable']}: moving from {item['low_input']} to "
+                    f"{item['high_input']} shifts predicted "
+                    f"{scenario.get('target_column')} by {item['impact_range']}",
+                    styles["BodyText"]
+                )
+            )
+
+    content.append(Spacer(1, 15))
+
+
 def generate_pdf_report(data, dataset_id: str):
 
     os.makedirs(_REPORTS_DIR, exist_ok=True)
@@ -218,6 +287,15 @@ def generate_pdf_report(data, dataset_id: str):
             content.append(
                 Spacer(1,10)
             )
+
+
+    # Scenario Simulator results (only present after a scenario has
+    # been run for this dataset — see routes/scenario.py)
+
+    scenario = data.get("scenario")
+
+    if scenario:
+        _add_scenario_section(content, styles, scenario)
 
 
     doc.build(content)

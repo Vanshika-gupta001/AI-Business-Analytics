@@ -76,6 +76,60 @@ Most "AI dashboard" portfolio projects wrap a single LLM call around a chart lib
 
 ---
 
+
+## Scenario Simulator (Strategic Decision Optimization)
+
+Beyond describing a dataset, the app can recommend a decision. Pick a
+numeric target KPI (e.g. Revenue) and 1-4 controllable business
+variables (e.g. Price, Marketing Spend, Discount %), and the backend
+searches for the combination of those variables that best drives the
+target — reusing the same Random Forest trained for Predictive
+Modeling, no duplicate training path.
+
+**Why Bayesian Optimization over grid search:** each evaluation requires
+a full `model.predict()` call. Grid search scales exponentially — 4
+variables × 20 steps each is 160,000 evaluations. Bayesian Optimization
+instead builds a Gaussian Process surrogate model of the response
+surface from the points already tried, and uses an Expected Improvement
+acquisition function to pick the most *informative* next point to
+evaluate. This reaches a near-optimal answer in ~25 evaluations instead
+of thousands — necessary on a CPU/time-constrained free-tier host, and
+a better fit than a bandit/RL approach here since the search space is
+continuous rather than a small fixed set of discrete actions.
+
+**Sensitivity analysis:** after finding the best combination, each
+variable is swept independently across its full observed range (holding
+the others at their optimized value) to measure how much that single
+lever can move the KPI on its own — the same idea as a finance "tornado
+chart," computed from the trained model instead of a spreadsheet
+formula. This is what answers "which lever matters most," not just
+"what's the best combination."
+
+**Flow:** Upload → Train baseline model → Optimize scenario → Result is
+saved back onto the dataset and folded into the downloadable PDF report,
+so the recommendation isn't stuck in the dashboard — it's in the
+document a decision-maker would actually read.
+
+```
+Upload CSV → profile + train baseline model
+                    ↓
+  Scenario Simulator: pick target KPI + controllable variables
+                    ↓
+  Bayesian Optimization (skopt, Expected Improvement, ~25 evaluations)
+                    ↓
+  Best combination + sensitivity breakdown + convergence trace
+                    ↓
+  Saved to dataset record → folded into PDF report
+```
+
+**Limitation (by design, not an oversight):** only numeric controllable
+variables are supported — categorical variables (e.g. Region) would need
+a different search space type (`skopt.space.Categorical`), which is a
+reasonable next step but was left out to keep the search space and this
+first version simple.
+
+---
+
 ## Running locally
 
 ### Backend

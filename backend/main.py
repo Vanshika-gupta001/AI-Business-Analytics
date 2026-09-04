@@ -15,6 +15,9 @@ from routes.query import router as query_router
 from database import engine, Base
 from models import db_models  # noqa: F401 (registers models on Base.metadata)
 
+from routes.scenario import router as scenario_router
+
+
 
 load_dotenv()
 
@@ -66,7 +69,7 @@ app.include_router(upload_router)
 app.include_router(chat_router)
 app.include_router(train_router)
 app.include_router(query_router)
-
+app.include_router(scenario_router)
 
 @app.get("/")
 def home():
