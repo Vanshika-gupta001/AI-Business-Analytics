@@ -8,6 +8,8 @@ from auth import get_current_user
 from services.dataset_loader import load_dataframe_sampled
 from services.scenario_optimizer import optimize_scenario
 from services.pdf_generator import generate_pdf_report
+from services.chart_generator import generate_charts
+import os
 
 router = APIRouter()
 
@@ -68,6 +70,24 @@ def optimize(
         # boardroom-ready report.
         analysis = dataset_row.analysis_result or {}
         analysis["scenario"] = result
+
+        # Free-tier hosting wipes local disk on every redeploy/restart —
+        # the chart PNGs referenced in analysis["charts"] may no longer
+        # exist even though the dataset record itself is fine (it's
+        # persisted in Postgres). Regenerate them from the dataframe we
+        # already loaded above rather than silently shipping a PDF with
+        # no graphs, matching the same resilience pattern already used
+        # in routes/upload.py's get_dataset endpoint.
+        existing_charts = analysis.get("charts", [])
+        charts_missing = not existing_charts or not all(
+            os.path.exists(c) for c in existing_charts
+        )
+
+        if charts_missing:
+            try:
+                analysis["charts"] = generate_charts(df)
+            except Exception:
+                pass  # non-fatal — PDF will just omit charts, as before
 
         new_pdf_path = generate_pdf_report(analysis, dataset_row.id)
 
