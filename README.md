@@ -25,6 +25,9 @@
 **Ava — the AI assistant, answering with real computed numbers from the dataset**
 ![Ava chat](docs/screenshots/05-ava-chat.png)
 
+**Scenario Simulator — Bayesian-optimized recommendation with convergence and sensitivity charts**
+![Scenario Simulator](docs/screenshots/06-scenario-simulator.png)
+
 ---
 
 ## Why this project is different
@@ -35,6 +38,7 @@ Most "AI dashboard" portfolio projects wrap a single LLM call around a chart lib
 - **Guardrails on the ML, not just the UI.** ID-like or free-text columns are automatically excluded from the predictive-modeling target list. Small-sample results are flagged as "directional, not production-grade" instead of being presented with false confidence.
 - **Handles real-world scale.** Tested end-to-end (upload → profiling → charts → training → PDF export) against a 250,000-row dataset without crashing, on a memory-constrained free-tier server — via row sampling for chart generation and model training, and explicit memory cleanup after each request.
 - **Survives ephemeral hosting.** Free-tier hosts wipe local disk on every restart. Uploaded CSVs are also persisted in PostgreSQL, so a restart never breaks a saved analysis — charts and PDFs regenerate on demand if the disk copy is gone.
+- **Doesn't just describe data — recommends a decision.** The Scenario Simulator turns the trained predictive model into a decision-support tool: instead of only reporting what the data shows, it searches for the business-variable combination that best drives a chosen KPI.
 
 ---
 
@@ -50,9 +54,10 @@ Most "AI dashboard" portfolio projects wrap a single LLM call around a chart lib
 | **AI Recommendations** | Data-cleaning suggestions generated from the dataset's actual stats (Groq / `openai/gpt-oss-120b`) |
 | **Business Recommendations** | Problem → Evidence → Cause → Recommendation → Impact cards, grounded in the dataset |
 | **Predictive Modeling** | One-click Random Forest classifier/regressor with real metrics (R², accuracy, F1, etc.) and feature importance |
+| **Scenario Simulator** | Bayesian Optimization to find the variable combination that best drives a target KPI, with sensitivity analysis and multi-scenario comparison |
 | **Ava — AI Assistant** | Single chat surface: computes real answers for data questions, falls back to general conversation for anything else |
 | **Charts** | Auto-generated histograms, box plots, correlation heatmap, and category breakdowns, dark-themed to match the app |
-| **PDF Reports** | One-click business report export, including all charts |
+| **PDF Reports** | One-click business report export, including all charts and the recommended scenario when one has been run |
 | **Dataset History** | Searchable, sortable, filterable table of past uploads; reopen any analysis without recomputing; CSV/PDF re-download |
 | **Onboarding** | First-time guided tips on login, register, and first dashboard visit |
 
@@ -60,8 +65,8 @@ Most "AI dashboard" portfolio projects wrap a single LLM call around a chart lib
 
 ## Tech Stack
 
-**Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Framer Motion
-**Backend:** FastAPI, SQLAlchemy, PostgreSQL, scikit-learn, pandas, matplotlib/seaborn, ReportLab
+**Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Framer Motion, Recharts
+**Backend:** FastAPI, SQLAlchemy, PostgreSQL, scikit-learn, scikit-optimize, pandas, matplotlib/seaborn, ReportLab
 **AI:** Groq API (`openai/gpt-oss-120b`) for chat, summaries, and recommendations
 **Auth:** JWT (python-jose), bcrypt password hashing
 **Deployment:** Vercel (frontend) + Render (backend + PostgreSQL), Dockerized backend
@@ -72,10 +77,10 @@ Most "AI dashboard" portfolio projects wrap a single LLM call around a chart lib
 
 - **Safe natural-language querying** (`services/query_engine.py`): the LLM never generates or executes arbitrary code. It's constrained to selecting one of ~8 pre-defined pandas operations as JSON, validated against the actual dataset's columns before running.
 - **Memory-safe on large datasets**: chart generation and model training sample down to a fixed row cap before processing, and dataframes are explicitly released after each request — necessary to stay within a 512MB memory limit on the free-tier host.
-- **Ephemeral-storage resilience**: uploaded CSVs are persisted in PostgreSQL (not just disk), so charts and PDFs can always be regenerated even after a server restart wipes local files.
+- **Ephemeral-storage resilience**: uploaded CSVs are persisted in PostgreSQL (not just disk), so charts and PDFs can always be regenerated even after a server restart wipes local files. The Scenario Simulator's PDF regeneration step re-checks chart files on disk and rebuilds them from the stored dataset if a redeploy has wiped them, rather than silently shipping a report with missing graphs.
+- **One trained model, two consumers**: `services/ml_model.py` exposes an internal training function reused by both the Predictive Modeling tab and the Scenario Simulator, so the two features can never drift out of sync with two separate training implementations.
 
 ---
-
 
 ## Scenario Simulator (Strategic Decision Optimization)
 
@@ -172,4 +177,4 @@ A sample CSV is included in `/datasets` for quickly trying out every feature wit
 ## Author
 
 **Vanshika Gupta**
-[GitHub](https://github.com/Vanshika-gupta001) · [LinkedIn](#) (https://www.linkedin.com/in/vanshika-gupta-mba)
+[GitHub](https://github.com/Vanshika-gupta001) · [LinkedIn](https://www.linkedin.com/in/vanshika-gupta-mba)
